@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Arduino</title>
+    <style>
+        @import url(https://fonts.bunny.net/css?family=outfit:100);
+        body {
+            background-color: white;
+        }
+        .page-title {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .page-title h1 {
+            user-select: none;
+            color: black;
+            font-family: sans-serif;
+        }
+        .stats {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100%;
+         }
+        .tile {
+            position: relative;
+            width: 30%;
+            max-height: 100%;
+            height: auto;
+            border: 1px solid #dddddd;
+            bottom: 30%;
+            margin: auto 1% auto 0;
+        }
+        .tile h1 {
+            position: relative;
+            text-align: center;
+            font-family: Outfit;
+            font-size: 1.7vw;
+            user-select: none;
+            /*bottom: 10%;*/
+        }
+
+        .tile h2 {
+            display: flex;
+            justify-content: center;
+            position: relative;
+            text-align: right;
+            font-family: Outfit;
+            font-size: 1.2vw;
+            user-select: none;
+        }
+
+        .top {
+            position: relative;
+            margin-top: -25%;
+        }
+        .th {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex-direction: column;
+        }
+        .th h1[id=title] {
+            user-select: none;
+            color: black;
+            font-family: Outfit;
+        }
+        .th h1[id=last] {
+            user-select: none;
+            color: black;
+            font-family: Outfit;
+            font-size: 1.6vw;
+        }
+    </style>
+</head>
+<body>
+<div class="page-title">
+    <h1>Arduino Web Server</h1>
+</div>
+<div class="stats">
+    <div class="tile">
+        <h1>Temperature</h1>
+        <h2 id="temp">0°C</h2>
+        <h2 id="tempstat">Status</h2>
+    </div>
+      <div class="tile">
+          <h1>Humidity</h1>
+          <h2 id="hum">0%</h2>
+          <h2 id="humstat">Status</h2>
+    </div>
+</div>
+<div class="th top">
+    <h1 id="title">Last Updated At</h1>
+    <h1 id="last"></h1>
+</div>
+<script src="https://unpkg.com/axios@1.1.2/dist/axios.min.js"></script>
+
+<script defer>
+document.addEventListener("DOMContentLoaded", () => {
+    const statsDiv = document.querySelector(".stats")
+    const literally_th = document.querySelector(".th")
+    setInterval(async () => {
+        await axios.get("https://api.meow.lol/getarddata").then(async r => {
+            const data = r.data
+            if (data.length < 1) {
+                console.log("No data to show")
+            } else {
+                const temp = statsDiv.querySelector("h2[id=temp]")
+                const tempstat = statsDiv.querySelector("h2[id=tempstat]")
+                const humstat = statsDiv.querySelector("h2[id=humstat]")
+                const hum = statsDiv.querySelector("h2[id=hum]")
+                const lastupd = literally_th.querySelector("h1[id=last]")
+
+                const humText = `${data["static"].at(0)["hum"]}%`
+                const tempText = `${data["static"].at(0)["temp"]}°C`
+                const timeText = `${data["static"].at(0)["time"]}`
+                temp.textContent = tempText
+                hum.textContent = humText
+                lastupd.textContent = `${timeText}`
+                tempstat.textContent = data["static_info"]["temp_info"]
+                humstat.textContent = data["static_info"]["hum_info"]
+                // await axios.post("https://api.meow.lol/analysedata", {
+                //     prompt: "Sum me up the data ive given you.", //Not implemented yet,
+                //     temp: tempText,
+                //     hum: humText,
+                //     time: data["static"].at(0)["time"]
+                // }, {
+                //     headers: {
+                //         "Content-Type": "application/json"
+                //     }
+                // }).then(r2 => {
+                //     const data = r.data
+                //     console.log(data)
+                // }).catch(e => {
+                //      console.log(e.response.data)
+                // })
+            }
+
+        }).catch(e => {
+            console.log(e, e.response.status)
+        })
+    }, 500)
+})
+</script>
+</body>
+</html>
